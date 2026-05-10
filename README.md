@@ -30,6 +30,19 @@ Agentic training plan generator built on La Clinique du Coureur methodology with
 
 ---
 
+### PM Knowledge OS *(live · personal use)*
+Agentic system for ingesting, synthesizing, and curating PM knowledge — articles, frameworks, prompts — organized into a structured second brain.
+
+**The problem:** Reading a PM article takes 20 minutes. Extracting what's actually applicable to current work, filing it in the right place, and making it retrievable later takes an hour. Most PMs just bookmark things and never go back.
+
+**The approach:** Claude Code skills that auto-summarize articles into a structured format (flash thesis · key concepts · strategic takeaway), categorize them by PM domain (discovery, strategy, experimentation, AI product), and generate production-ready prompts from raw task descriptions. Persistent memory across sessions so context doesn't reset.
+
+**Tradeoffs:** Built on local files + Claude Code rather than a hosted knowledge base (Notion, Obsidian). Tradeoff: no mobile access, but full control over the schema and zero vendor lock-in. The system's CLAUDE.md acts as the schema — Claude knows the structure and respects it without being re-instructed each session.
+
+**What I learned:** The bottleneck in a knowledge system isn't storage — it's ingestion. A 30-second summary that gets filed immediately beats a perfect note that never gets written.
+
+---
+
 ### Job Search AI OS *(built · personal use)*
 10+ orchestrated Claude Code skills covering offer analysis, CV tailoring, cover letter generation, interview prep, compensation targeting, and daily multi-workspace check-ins.
 
