@@ -2,55 +2,121 @@
 
 **AI-augmented product work** — tools I build and use as a Senior PM.
 
-> Not tutorials. Not demos. Things I actually ship.
+> Not tutorials. Not demos. Things I actually ship and use daily.
+
+---
+
+## Shipping log
+
+| When | What shipped |
+|------|-------------|
+| May 2026 | CoachRunning TP integration — multi-athlete coach mode, pace zone conversion per athlete, auto-sync to watches |
+| May 2026 | Automated weekly review — 6 athletes, planned vs done comparison, next week generation, coach notes pushed to TP |
+| May 2026 | Session debrief pipeline — fetches TP data post-run, inserts lap-by-lap analysis + LDCC commentary into coach MD |
+| Apr 2026 | CoachRunning eval system — LLM-as-judge on 6 quality dimensions + functional regression tests, auto-run before every delivery |
+| Apr 2026 | CoachRunning Google Drive pipeline — questionnaire → Claude → Google Doc delivered to athlete's Drive |
+| Mar 2026 | Job Search AI OS — 10+ orchestrated skills: offer analysis, CV tailoring, outreach, interview prep, daily check-in |
+| Feb 2026 | PM Knowledge OS — 7-domain knowledge base with article ingestion pipeline, prompt library, and skill-based retrieval |
+| Aug 2025 | doc-immo MVP — Claude extracts mortgage document fields, outputs structured synthesis with confidence flags |
 
 ---
 
 ## Projects
 
-### doc-immo *(in progress · private)*
-AI system that analyzes mortgage documents uploaded by real estate clients and produces a structured synthesis of key elements (income, liabilities, red flags).
+### CoachRunning Agentic System *(live · private repo)*
 
-**The problem:** Mortgage brokers spend 30–60 min manually reviewing client document packages before they can start their analysis. Files come in different formats, naming conventions, and completeness levels.
+Automated running coach for 6 athletes. Generates personalized programs using La Clinique du Coureur methodology and pushes them directly to athletes' TrainingPeaks calendars — which auto-sync to their Suunto/Garmin watches.
 
-**The approach:** Upload → Claude extracts key fields → structured output with confidence flags for human review. Build to Learn first: validate that the extraction logic is reliable before building any UI.
+**The problem:** Personalizing a week of training for 6 athletes manually takes 4+ hours. Each athlete has a different threshold pace, target race, injury history, and schedule. Delivery via PDF means athletes forget the program by Wednesday.
 
-**Tradeoffs:** Chose Claude over fine-tuned models because the document types vary too much for a narrow model to generalize. Latency is acceptable for this use case (not real-time).
+**The discovery:** Started with a Google Drive pipeline (questionnaire → Claude → Google Doc in athlete's folder). Athletes read it once. Built TrainingPeaks integration after realizing the friction was in delivery, not generation. TP syncs directly to the watch — the workout shows up step-by-step during the run.
 
----
+**The pipeline:**
+```
+Questionnaire (Google Doc)
+      ↓
+read_questionnaire.py  ← extracts profile, goals, constraints via Drive API
+      ↓
+/running-program-designer (Claude Code skill)
+      ↓
+workouts-<athlete>.json  ← structured workout definitions per week + "pourquoi" text per session
+      ↓
+push_to_trainingpeaks.py  ← pushes structured workouts as coach to each athlete's TP calendar
+      ↓
+TrainingPeaks  ──auto-sync──▶  Suunto Race S / Garmin 965
+```
 
-### CoachRunning Agentic System *(live)*
-Agentic training plan generator built on La Clinique du Coureur methodology with direct TrainingPeaks sync via MCP.
+**The hard technical parts:**
+- TP's API requires a partnership for OAuth — used cookie-based auth (`Production_tpAuth`) that exchanges for a bearer token. Stored in `~/.tp-coach.json`, expires ~30 days
+- Pace targets must be sent as % of threshold pace, not min/km — each athlete has a stored `threshold_pace_sec`, the script converts every range at push time
+- Workout structure is a serialized JSON string inside the API payload (not a nested object) — required reverse-engineering the polyline format for the pace graph display
+- Multi-athlete coach mode: authenticates as coach, fetches `athlete_id` from `user.athletes[]`, posts workouts to each athlete's calendar
 
-**The problem:** Generating personalized running programs manually is time-consuming and hard to keep consistent across multiple athletes.
+**Eval system — two layers:**
 
-**The approach:** Claude Code + custom skills → structured workout JSON → TrainingPeaks API via Model Context Protocol → auto-sync to athlete watches (Suunto).
+`/test-coaching-fonctionnel` (functional regression, binary assertions):
+- Correct zones for each step type (warmup → Z1, intervals → Z4+)
+- Allures within bounds for the athlete's threshold
+- JSON structure valid for TP push
+- Décharge (taper) weeks flagged correctly
 
-**What I learned:** MCP is genuinely useful for bridging local AI workflows to external APIs without building a full integration layer. The friction is in auth token management, not in the protocol itself.
+`/eval-coaching-qualite` (LLM-as-judge, gradient 0–1 score):
+- Conformité aux sources LDCC/DR
+- Précision des allures
+- Cohérence de la progression semaine sur semaine
+- Ton du "Pourquoi cette séance" (no jargon, athlete-first language)
+- Structure du bilan
+- Prise en compte du feedback athlète
+
+Both run automatically before every program delivery or weekly review. No output ships without passing.
+
+**Metrics:** 6 athletes · 22 weeks programmed · 61 workouts structured and delivered · Weekly automated review cycle
 
 ---
 
 ### PM Knowledge OS *(live · personal use)*
-Agentic system for ingesting, synthesizing, and curating PM knowledge — articles, frameworks, prompts — organized into a structured second brain.
 
-**The problem:** Reading a PM article takes 20 minutes. Extracting what's actually applicable to current work, filing it in the right place, and making it retrievable later takes an hour. Most PMs just bookmark things and never go back.
+Agentic system for ingesting PM articles, organizing them into a structured second brain, and retrieving them at the right moment in product work.
 
-**The approach:** Claude Code skills that auto-summarize articles into a structured format (flash thesis · key concepts · strategic takeaway), categorize them by PM domain (discovery, strategy, experimentation, AI product), and generate production-ready prompts from raw task descriptions. Persistent memory across sessions so context doesn't reset.
+**The problem:** Reading a PM article takes 20 minutes. Extracting what's applicable to current work, categorizing it, and making it retrievable later takes another hour. Most PMs bookmark things and never go back.
 
-**Tradeoffs:** Built on local files + Claude Code rather than a hosted knowledge base (Notion, Obsidian). Tradeoff: no mobile access, but full control over the schema and zero vendor lock-in. The system's CLAUDE.md acts as the schema — Claude knows the structure and respects it without being re-instructed each session.
+**What I built:**
+- `/strategic-educator` — reads an article (Markdown or PDF) and produces a structured 4-section French synthesis: 30s thesis, key concepts with PM impact, process walkthrough, strategic takeaway
+- `/categorisation` — PM librarian: analyzes a Sources/ folder, proposes reading order (fundamentals → technology → PM application), renames files with numeric prefixes after validation
+- `/pm-prompt-generator` — transforms raw PM task descriptions into structured production-ready prompts using XML tags, saves them to the correct Prompt Library subfolder
+- 7-domain routing table in `CLAUDE.md` — any PM analysis is automatically directed to the relevant source files without re-instruction
 
-**What I learned:** The bottleneck in a knowledge system isn't storage — it's ingestion. A 30-second summary that gets filed immediately beats a perfect note that never gets written.
+**The non-obvious constraint:** Ingestion friction kills knowledge systems. A 30-second synthesis filed immediately beats a perfect note never written. Every skill removes one step of friction from the ingestion loop.
+
+**Architecture:** Local files + Claude Code rather than Notion or Obsidian. Tradeoff: no mobile access, but full schema control and no vendor lock-in. The `CLAUDE.md` is the schema — Claude reads it at session start and respects it across conversations.
+
+**Scale:** 7 PM domains · 50+ synthesized sources · Prompt library across 4 categories
 
 ---
 
 ### Job Search AI OS *(built · personal use)*
+
 10+ orchestrated Claude Code skills covering offer analysis, CV tailoring, cover letter generation, interview prep, compensation targeting, and daily multi-workspace check-ins.
 
-**The problem:** Senior PM job searching is a full-time job. Each application needs tailored positioning, competitive intel, and interview prep — most candidates do this manually and inconsistently.
+**The problem:** Senior PM job searching is a full-time job. Each application needs tailored positioning, competitive intel, and prep — most candidates do this manually across 8–12 active processes simultaneously.
 
-**The approach:** Persistent memory across sessions, contextual skill triggers, autonomous multi-step orchestration. Not a chatbot — a system with defined tool boundaries, human validation checkpoints, and quality criteria.
+**Skills built:** `/matchmaker` (fit scoring on 6 dimensions) · `/job-fit` (track record vs requirements gap) · `/cover-letter-generator` · `/outreach-generator` · `/interview-prep` · `/interview-debrief` · `/compensation-target` · `/daily-briefing` · `/candidate-market-fit` · `/referral-coach` · `/inbound-reply-generator`
 
-**What I learned:** The hardest part isn't the AI prompting — it's defining when the system should stop and ask a human. That's a product design problem, not a technical one.
+**Pipeline:** `pipeline.md` is the single source of truth — every skill reads and writes to it. `/daily-briefing` surfaces what needs action each morning across all active processes.
+
+**The hard design problem:** Defining when the system should stop and ask a human. Every skill has explicit human checkpoints — no email is sent, no pipeline stage updated, no commitment made without a visible confirmation step. That boundary is a product design decision, not a technical one.
+
+---
+
+### doc-immo *(in progress · private)*
+
+AI system that analyzes mortgage document packages and produces a structured synthesis for brokers.
+
+**The problem:** Mortgage brokers spend 30–60 min manually reviewing client document packages before they can start their analysis. Files come in different formats, naming conventions, and completeness levels.
+
+**The approach:** Upload → Claude extracts key fields (income, liabilities, red flags) → structured output with confidence flags for human review. Build-to-learn first: validate extraction reliability before building any UI.
+
+**Tradeoff:** Claude over fine-tuned models — document types vary too much for a narrow model to generalize. Latency is acceptable; this is not a real-time use case.
 
 ---
 
@@ -58,10 +124,10 @@ Agentic system for ingesting, synthesizing, and curating PM knowledge — articl
 
 I use AI as an accelerant for product work — not a replacement for PM judgment.
 
-- **Prototyping:** V0 for production-ready UI mockups (delivered directly to Engineering)
+- **Prototyping:** V0 for production-ready UI mockups delivered directly to Engineering
 - **Research synthesis:** Claude Code for processing user interviews, community feedback, competitive signals
 - **Experimentation:** Statsig + CUPED methodology for A/B tests on noisy e-commerce data
-- **Systems design:** Defining agentic workflows with explicit tool boundaries and human checkpoints
+- **Systems design:** Agentic workflows with explicit tool boundaries and human validation checkpoints
 
 The output isn't "AI-generated content." It's faster, better-instrumented PM work.
 
