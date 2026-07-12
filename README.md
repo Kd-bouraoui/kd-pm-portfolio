@@ -10,9 +10,13 @@
 
 | When | What shipped |
 |------|-------------|
-| May 2026 | CoachRunning TP integration — multi-athlete coach mode, pace zone conversion per athlete, auto-sync to watches |
-| May 2026 | Automated weekly review — 6 athletes, planned vs done comparison, next week generation, coach notes pushed to TP |
-| May 2026 | Session debrief pipeline — fetches TP data post-run, inserts lap-by-lap analysis + LDCC commentary into coach MD |
+| Jul 2026 | Athlete onboarding at scale — 9 new athletes: questionnaire → personalized program → calendar setup → automated welcome notes with HR zones and watch config |
+| Jun 2026 | Idempotent multi-athlete push — pre-fetch planned workouts, skip by (date, title); safe re-runs with zero duplicates after partial failures |
+| Jun 2026 | Post-run lap analysis — watch lap data matched to workout structure (warm-up/active/rest blocks) with pace, HR, cadence per block · 89-test regression suite |
+| Jun 2026 | Methodology-strict program generation — plans copied verbatim from evidence-based training frameworks, pace zones adapted per athlete |
+| May 2026 | CoachRunning TrainingPeaks integration — multi-athlete coach mode, pace zone conversion per athlete, auto-sync to watches |
+| May 2026 | Automated weekly review — planned vs done comparison per athlete, next week generation, coach notes pushed to athletes' calendars |
+| May 2026 | Session debrief pipeline — fetches training data post-run, inserts lap-by-lap analysis + coaching commentary into coach notes |
 | Apr 2026 | CoachRunning eval system — LLM-as-judge on 6 quality dimensions + functional regression tests, auto-run before every delivery |
 | Apr 2026 | CoachRunning Google Drive pipeline — questionnaire → Claude → Google Doc delivered to athlete's Drive |
 | Mar 2026 | Job Search AI OS — 10+ orchestrated skills: offer analysis, CV tailoring, outreach, interview prep, daily check-in |
@@ -25,12 +29,12 @@
 
 ### CoachRunning *(live · private repo)*
 
-Agentic running coach for 6 athletes. Generates personalized programs using La Clinique du Coureur methodology and pushes them directly to athletes' TrainingPeaks calendars, which auto-sync to their Suunto/Garmin watches.
+Agentic running coach currently in beta with 18 athletes onboarded (9 active, 9 starting). Generates personalized programs grounded in evidence-based coaching methodology and pushes them directly to athletes' TrainingPeaks calendars, which auto-sync to their Suunto/Garmin watches. Profiles range from first-time runners to marathon and Hyrox competitors.
 
 **AI infra:**
 - **Two-layer eval before every delivery** — functional regression (binary assertions: correct zones, valid JSON, pace bounds per athlete) + LLM-as-judge (0–1 score on 6 dimensions: source conformity, pace accuracy, progression coherence, coaching tone, structure, athlete feedback integration). No output ships without passing both.
 - **Human-in-the-loop checkpoints** — coach reviews generated program before push; athletes log RPE after each session; weekly debrief surfaces deviations before next week is generated
-- **Metrics:** 6 athletes · 22 weeks programmed · 61 workouts delivered · weekly automated review cycle
+- **Metrics:** 18 athletes onboarded in beta · live since April 2026 · 100+ workouts delivered · weekly automated review cycle
 
 ---
 
