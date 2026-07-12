@@ -60,7 +60,7 @@ Agentic system for ingesting PM articles, organizing them into a structured seco
 
 ---
 
-### doc-immo *(in progress · private)*
+### doc-immo *(on hold · private)*
 
 AI system that analyzes mortgage document packages and produces a structured synthesis for brokers. Claude extracts key fields, flags inconsistencies, and outputs confidence-scored results for human review.
 
