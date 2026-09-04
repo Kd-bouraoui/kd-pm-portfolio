@@ -10,6 +10,14 @@
 
 | When | What shipped |
 |------|-------------|
+| Sep 2026 | Alert fatigue treated as a data-model defect — intentional exceptions (athletes with no timed test, by coaching decision) declared as first-class config instead of prose, turning a permanently-red check into a silent one. The deadline to revisit each exception is now carried by the system, not by a line in a doc nobody re-reads |
+| Sep 2026 | Fail-fast on unknown CLI flags — a hand-rolled arg parser silently swallowed unrecognized arguments, so a run believed to be a dry-run pushed for real. Unknown flag now exits with the valid list |
+| Aug 2026 | Reliability push after a 27-incident week — 4 new gates: step-completion preflight (catches skipped steps, invisible on re-read), historical replay sweep, post-push verification, backfill of stale rows. **Mechanical incident detection 19% → 66%**, each gate validated by replaying the real incident it closes |
+| Aug 2026 | Session-matching refactor — explicit category written at generation time + multi-key cascade (exact title → date → weekday), replacing keyword guessing on free-text titles. **Completed sessions never matched: 10.1% → 2.2%**, measured on 15 weeks × 20 athletes. Title-only joins scored 25.6%, worse than the heuristic they replaced: the bench is what kept the wrong design out |
+| Aug 2026 | Workout blocks rebuilt from the time series instead of device laps — reads the planned-intensity channel to locate block boundaries, so auto-lap watches no longer report an arbitrary GPS kilometre as an interval pace. Raw vs moving pace separated (up to 88s/km apart on urban runs) |
+| Aug 2026 | Claims gate — any statement about an athlete's training history is blocked unless the underlying data point is cited. Written after the same error recurred 5 times in 3 weeks; the gate does not judge truth, it makes the sentence impossible to ship unverified |
+| Aug 2026 | Availability collected in-channel — athletes report constraints by replying to their calendar note instead of scattered chat threads. Surfaced to the coach as input; nothing is applied automatically |
+| Aug 2026 | Strength-training single source — reference cycle imported once, sessions built by copy with a drift assertion before push, ending the week-to-week drift athletes were spotting before the coach did |
 | Jul 2026 | Athlete onboarding at scale — 9 new athletes: questionnaire → personalized program → calendar setup → automated welcome notes with HR zones and watch config |
 | Jun 2026 | Idempotent multi-athlete push — pre-fetch planned workouts, skip by (date, title); safe re-runs with zero duplicates after partial failures |
 | Jun 2026 | Post-run lap analysis — watch lap data matched to workout structure (warm-up/active/rest blocks) with pace, HR, cadence per block · 89-test regression suite |
@@ -29,12 +37,13 @@
 
 ### CoachRunning *(live · private repo)*
 
-Agentic running coach currently in beta with 18 athletes onboarded (9 active, 9 starting). Generates personalized programs grounded in evidence-based coaching methodology and pushes them directly to athletes' TrainingPeaks calendars, which auto-sync to their Suunto/Garmin watches. Profiles range from first-time runners to marathon and Hyrox competitors.
+Agentic running coach currently in beta with 21 active athletes. Generates personalized programs grounded in evidence-based coaching methodology and pushes them directly to athletes' TrainingPeaks calendars, which auto-sync to their Suunto/Garmin watches. Profiles range from first-time runners to marathon and Hyrox competitors.
 
 **AI infra:**
 - **Two-layer eval before every delivery** — functional regression (binary assertions: correct zones, valid JSON, pace bounds per athlete) + LLM-as-judge (0–1 score on 6 dimensions: source conformity, pace accuracy, progression coherence, coaching tone, structure, athlete feedback integration). No output ships without passing both.
 - **Human-in-the-loop checkpoints** — coach reviews generated program before push; athletes log RPE after each session; weekly debrief surfaces deviations before next week is generated
-- **Metrics:** 18 athletes onboarded in beta · live since April 2026 · 100+ workouts delivered · weekly automated review cycle
+- **Measured, not asserted** — every reliability change ships with the number it moved: incident detection 19% → 66%, unmatched sessions 10.1% → 2.2%. A comparison bench decides between designs, including rejecting the intuitive one that scored worse.
+- **Metrics:** 21 active athletes · live since April 2026 · 300+ workouts delivered · ~70 sessions and 20 coach notes pushed and verified per weekly cycle
 
 ---
 
