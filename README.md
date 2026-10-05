@@ -86,4 +86,4 @@ Claude Code · TrainingPeaks API · Google Drive API · Statsig (CUPED A/B testi
 
 ---
 
-*Senior PM based in Montréal · kdbouraoui@gmail.com · [LinkedIn](https://linkedin.com/in/kdbouraoui)*
+*Senior PM based in Montréal · bouraoui.kd@gmail.com · [LinkedIn](https://linkedin.com/in/kdbouraoui)*
