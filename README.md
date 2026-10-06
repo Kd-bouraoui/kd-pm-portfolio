@@ -10,6 +10,7 @@
 
 | When | What shipped |
 |------|-------------|
+| Oct 2026 | Grounded all nutrition advice (in-run fueling, race-week carb loading, hydration) in a registered dietitians' guide; generated athlete messages can no longer emit figures outside it, enforced by the quality evaluator |
 | Oct 2026 | Rebuilt the coaching QA suite from 2,366 lines of prompt-embedded test code into an executable regression script (18 checks) with 14 replayed real incidents; the replay surfaced 2 holes inherited from the old suite, one of them in the production lint gate |
 | Sep 2026 | Alert fatigue treated as a data-model defect — intentional exceptions (athletes with no timed test, by coaching decision) declared as first-class config instead of prose, turning a permanently-red check into a silent one. The deadline to revisit each exception is now carried by the system, not by a line in a doc nobody re-reads |
 | Sep 2026 | Fail-fast on unknown CLI flags — a hand-rolled arg parser silently swallowed unrecognized arguments, so a run believed to be a dry-run pushed for real. Unknown flag now exits with the valid list |
