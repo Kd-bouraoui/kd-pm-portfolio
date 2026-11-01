@@ -10,6 +10,7 @@
 
 | When | What shipped |
 |------|-------------|
+| Nov 2026 | Hardened the pre-push guard that scans this public repo for forbidden content: a guard that cannot run (missing script, crash, 30 s timeout) now blocks the push instead of letting it through. Found by reading the code, which showed only the scan stage failed closed. Two other hooks were deliberately left unchanged: the setting is ignored on Stop hooks, and on the prompt router it would block every prompt. **9/9 guard tests pass, 130 consecutive runs with no failure** |
 | Oct 2026 | Race-day plans: the coaching pipeline now pushes km-based race workouts (one block per distance segment, with a pace target for each) plus a separate warm-up, so the athlete's watch switches pace at the right kilometre instead of on a timer |
 | Oct 2026 | Grounded all nutrition advice (in-run fueling, race-week carb loading, hydration) in a registered dietitians' guide; generated athlete messages can no longer emit figures outside it, enforced by the quality evaluator |
 | Oct 2026 | Rebuilt the coaching QA suite from 2,366 lines of prompt-embedded test code into an executable regression script (18 checks) with 14 replayed real incidents; the replay surfaced 2 holes inherited from the old suite, one of them in the production lint gate |
